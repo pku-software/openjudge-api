@@ -1,6 +1,6 @@
 # Change Log
 
-## 0.1.2
+## 0.1.3
 
 - Add a interface for fetching problem info from contest page.
 
