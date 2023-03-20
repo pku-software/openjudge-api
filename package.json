@@ -11,6 +11,7 @@
   "keywords": [],
   "author": "Guyutongxue",
   "license": "GPLv3",
+  "repository": "github:pku-software/openjudge-api",
   "devDependencies": {
     "@types/node": "^18.15.3",
     "@types/tough-cookie": "^4.0.2",
