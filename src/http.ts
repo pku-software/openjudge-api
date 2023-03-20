@@ -45,6 +45,5 @@ export async function get(pathname: string) {
             }
             throw e;
         }
-    } while (false);
-    throw new Error();
+    } while (true);
 }
