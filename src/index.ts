@@ -68,29 +68,62 @@ export interface ProblemInfo {
   suffix: string;
 }
 
-export async function getProblemInfo(id: number) : Promise<ProblemInfo> {
-  const $ = await get(`/admin/problems/edit/?id=${id}`);
-  const title = $("input[name=title]").val();
-  const description = $("textarea[name=description]").val();
-  const input = $("textarea[name=input]").val();
-  const output = $("textarea[name=output]").val();
-  const sampleInput = $("textarea[name=sampleInput]").val();
-  const sampleOutput = $("textarea[name=sampleOutput]").val();
-  const hint = $("textarea[name=hint]").val();
+export async function getProblemInfo(contestHref: string, problemNo: string): Promise<ProblemInfo>;
+export async function getProblemInfo(id: number): Promise<ProblemInfo>;
+export async function getProblemInfo(a: string | number, b?: string) : Promise<ProblemInfo> {
+  if (typeof a === "number") {
+    // Admin, by id
+    const $ = await get(`/admin/problems/edit/?id=${a}`);
+    const title = $("input[name=title]").val();
+    const description = $("textarea[name=description]").val();
+    const input = $("textarea[name=input]").val();
+    const output = $("textarea[name=output]").val();
+    const sampleInput = $("textarea[name=sampleInput]").val();
+    const sampleOutput = $("textarea[name=sampleOutput]").val();
+    const hint = $("textarea[name=hint]").val();
 
-  const $2 = await get(`/admin/problems/predefined/?id=${id}`);
-  const prefix = $2("textarea[name=prefix]").val();
-  const suffix = $2("textarea[name=suffix]").val();
+    const $2 = await get(`/admin/problems/predefined/?id=${a}`);
+    const prefix = $2("textarea[name=prefix]").val();
+    const suffix = $2("textarea[name=suffix]").val();
 
-  return {
-    title: `${title}`,
-    description: `${description}`,
-    input: `${input}`,
-    output: `${output}`,
-    sampleInput: `${sampleInput}`,
-    sampleOutput: `${sampleOutput}`,
-    hint: `${hint}`,
-    prefix: `${prefix}`,
-    suffix: `${suffix}`,
+    return {
+      title: `${title}`,
+      description: `${description}`,
+      input: `${input}`,
+      output: `${output}`,
+      sampleInput: `${sampleInput}`,
+      sampleOutput: `${sampleOutput}`,
+      hint: `${hint}`,
+      prefix: `${prefix}`,
+      suffix: `${suffix}`,
+    }
+  } else {
+    // Guest, from contest page
+    const url = `${a}${b}`;
+    const $ = await get(url);
+    const title = $("#pageTitle").text().split(":")[1];
+    const contents: string[] = []
+    $(".problem-content").children().each((i, elem) => {
+      if (!$(elem).is("dd")) return;
+      if ($(elem).children().length === 1 && $(elem).children().is("pre")) {
+        contents.push($(elem).children().text());
+      } else {
+        const html = $(elem).html();
+        html && contents.push(html);
+      }
+    })
+    const hasPredefined = $(".sh_cpp").length > 0;
+    const predefinedOffset = hasPredefined ? 2 : 0;
+    return {
+      title,
+      description: contents[0],
+      prefix: hasPredefined ? contents[1] : "",
+      suffix: hasPredefined ? contents[2] : "",
+      input: contents[1 + predefinedOffset],
+      output: contents[2 + predefinedOffset],
+      sampleInput: contents[3 + predefinedOffset],
+      sampleOutput: contents[4 + predefinedOffset],
+      hint: contents[5 + predefinedOffset] ?? ""
+    };
   }
 }

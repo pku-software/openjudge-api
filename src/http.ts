@@ -35,7 +35,8 @@ export async function get(pathname: string) {
     let tried = false;
     do {
         try {
-            const result = await fetch(`http://${getHost()}${pathname}`);
+            const url = new URL(pathname, `http://${getHost()}`);
+            const result = await fetch(url.href);
             return load(result.body);
         } catch (e) {
             if (!tried) {
